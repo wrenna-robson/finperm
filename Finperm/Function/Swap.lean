@@ -80,6 +80,8 @@ theorem swapVal_injective_of_right [LawfulBEq α] :
 
 @[simp] theorem swapVal_eq_left_iff [LawfulBEq α] : swapVal a b x = a ↔ x = b := by grind
 @[simp] theorem swapVal_eq_right_iff [LawfulBEq α] : swapVal a b x = b ↔ x = a := by grind
+theorem swapVal_ne_left_iff [LawfulBEq α] : swapVal a b x ≠ a ↔ x ≠ b := by grind
+theorem swapVal_ne_right_iff [LawfulBEq α] : swapVal a b x ≠ b ↔ x ≠ a := by grind
 
 theorem swapVal_eq_iff [LawfulBEq α] : swapVal a b = swapVal c d ↔
     a = c ∧ b = d ∨ a = d ∧ b = c ∨ a = b ∧ c = d := by
@@ -96,10 +98,5 @@ theorem swapVal_eq_iff [LawfulBEq α] : swapVal a b = swapVal c d ↔
     · rfl
     · exact swapVal_comm a b
     · exact swapVal_self.trans swapVal_self.symm
-
-
-theorem uncurry_swapVal_eq_iff [LawfulBEq α] {p q : α × α} :
-    swapVal.uncurry p = swapVal.uncurry q ↔ p = q ∨ p = q.swap := by
-  simp [uncurry]
 
 end SwapVal

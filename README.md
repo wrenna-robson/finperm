@@ -1,1 +1,2 @@
 # finperm
+Finite permutations library.

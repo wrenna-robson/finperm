@@ -7,9 +7,8 @@ defaultTargets = ["Finperm"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 
 [[require]]
-name = "mathlib"
+name = "batteries"
 scope = "leanprover-community"
-rev = "v4.32.0"
 
 [[lean_lib]]
 name = "Finperm"
