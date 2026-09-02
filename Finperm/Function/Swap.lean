@@ -6,6 +6,8 @@ Authors: Wrenna Robson
 
 module
 
+public import Finperm.Function.Basic
+
 @[expose] public section
 
 namespace Function
@@ -49,23 +51,16 @@ theorem swapVal_comm [LawfulBEq α] (a b : α) : swapVal a b = swapVal b a := by
 
 @[simp] theorem swapVal_swapVal [LawfulBEq α] : swapVal a b (swapVal a b x) = x := by grind
 
-theorem leftInverse_swapVal_swapVal [LawfulBEq α] :
-    LeftInverse (swapVal a b) (swapVal a b) := by grind
+theorem isEquiv_swapVal_swapVal [LawfulBEq α] :
+    IsEquiv (swapVal a b) (swapVal a b) :=
+⟨fun _ => swapVal_apply_self, fun _ => swapVal_apply_self⟩
 
-theorem rightInverse_swapVal_swapVal  [LawfulBEq α] :
-    RightInverse (swapVal a b) (swapVal a b) := by grind
+theorem isEquiv_swapVal_swapVal_flip [LawfulBEq α] :
+    IsEquiv (swapVal a b) (swapVal b a) :=
+  ⟨fun _ => swapVal_apply_flip, fun _ => by rw [swapVal_comm]; exact swapVal_apply_self⟩
 
-theorem leftInverse_swapVal_swapVal_flip  [LawfulBEq α] :
-    LeftInverse (swapVal a b) (swapVal b a) := by grind
-
-theorem rightInverse_swapVal_swapVal_flip  [LawfulBEq α] :
-    RightInverse (swapVal a b) (swapVal b a) := by grind
-
-theorem swapVal_injective [LawfulBEq α] :
-    (swapVal a b).Injective := leftInverse_swapVal_swapVal.injective
-
-theorem swapVal_surjective [LawfulBEq α] :
-    (swapVal a b).Surjective := rightInverse_swapVal_swapVal.surjective
+theorem swapVal_bijective [LawfulBEq α] :
+    (swapVal a b).Bijective := isEquiv_swapVal_swapVal.bijective_left
 
 theorem swapVal_apply_eq_iff [LawfulBEq α] : swapVal a b x = y ↔ x = swapVal a b y := by grind
 theorem eq_swapVal_apply_iff [LawfulBEq α] : x = swapVal a b y ↔ swapVal a b x = y := by grind
