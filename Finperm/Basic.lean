@@ -3,8 +3,12 @@ Copyright (c) 2026 Kry10. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Wrenna Robson
 -/
-import Finperm.Vector.Nodup
-import Finperm.Function.Fin
+module
+public import Finperm.Vector.Nodup
+public import Finperm.Function.Fin
+import Finperm.Logic.Basic
+
+@[expose] public section
 
 /--
 A `Finperm n` is a permutation on `n` elements represented by two vectors, which we can
@@ -49,19 +53,25 @@ theorem getElem_toVector_getElem_invVector {n} (a : Finperm n) (i : Nat) (hi : i
 instance : Inv (Finperm n) where
   inv a := ⟨a.invVector, a.toVector, a.getElem_toVector_getElem_invVector⟩
 
+@[simp, grind =] theorem toVector_inv (a : Finperm n) : a⁻¹.toVector = a.invVector := rfl
+@[simp, grind =] theorem invVector_inv (a : Finperm n) : a⁻¹.invVector = a.toVector := rfl
+
+@[simp, grind =] theorem inv_inv (a : Finperm n) : a⁻¹⁻¹ = a := rfl
+
 theorem isEquiv_get_getInv (a : Finperm n) : a.get.IsEquiv a⁻¹.get :=
     IsSplitting.isEquiv_fin <| fun _ => Fin.ext <| (a.getElem_toVector_getElem_invVector _ _).2
 
-@[simp, grind =]
+@[simp]
 theorem inv_mk (a b : Vector Nat n) {hab} : (Finperm.mk a b hab)⁻¹ =
     Finperm.mk b a (Finperm.mk a b hab).getElem_toVector_getElem_invVector := rfl
-
 
 instance : GetElem (Finperm n) Nat Nat fun _ i => i < n where
   getElem a i h := a.toVector[i]
 
 @[simp, grind =]
 theorem getElem_toVector {i : Nat} {hi : i < n} {a : Finperm n} : a.toVector[i] = a[i] := rfl
+
+grind_pattern getElem_toVector => a.toVector[i]
 
 @[simp, grind =]
 theorem getElem_invVector  (a : Finperm n) {i} (hi : i < n) : a.invVector[i] = a⁻¹[i] := rfl
@@ -81,20 +91,46 @@ theorem eq_of_getElem_eq (a : Finperm n) (hi : i < n) (hj : j < n)
 @[simp] theorem getElem_eq_iff (a : Finperm n) (hi : i < n) (hj : j < n) :
     a[i] = a[j] ↔ i = j := by grind
 
-@[simp, grind =] theorem getElem_getElem_inv (a : Finperm n) {i} (hi : i < n) :
+theorem getElem_ne_of_ne (a : Finperm n) (hi : i < n) (hj : j < n)
+    (hij : i ≠ j) : a[i] ≠ a[j] := by grind
+
+theorem getElem_ne_iff (a : Finperm n) {i : Nat} (hi : i < n) {j : Nat} (hj : j < n) :
+    a[i] ≠ a[j] ↔ i ≠ j := by grind
+
+theorem exists_getElem_eq_of_lt (a : Finperm n) (i : Nat) (hi : i < n) :
+    ∃ (j : Nat) (hj : j < n), a[j] = i :=
+  (Fin.exists_iff.mp ((a.surjective_get ⟨i, hi⟩).imp (fun _ => congrArg Fin.val)))
+
+@[simp] theorem getElem_getElem_inv (a : Finperm n) {i} (hi : i < n) :
   a[a⁻¹[i]] = i := congrArg Fin.val (a.isEquiv_get_getInv.isSplitting_left _)
 
-@[simp, grind =] theorem getElem_inv_getElem (a : Finperm n) {i} (hi : i < n) :
+grind_pattern getElem_getElem_inv => a[a⁻¹[i]]
+
+@[simp] theorem getElem_inv_getElem (a : Finperm n) {i} (hi : i < n) :
   a⁻¹[a[i]] = i := congrArg Fin.val (a.isEquiv_get_getInv.isSplitting_right _)
 
-@[ext, grind ext]
-theorem ext (a b : Finperm n) (h : ∀ (i : Nat) (hi : i < n), a[i] = b[i]) : a = b := by
+grind_pattern getElem_inv_getElem => a⁻¹[a[i]]
+
+@[simp]
+theorem getElem_inv_eq_self_iff (a : Finperm n) {i : Nat} (hi : i < n) :
+    a⁻¹[i] = i ↔ a[i] = i := by grind
+
+theorem eq_of_toVector_eq (a b : Finperm n) (h : a.toVector = b.toVector) : a = b := by
   suffices h : a.toVector = b.toVector ∧ a.invVector = b.invVector by grind [cases Finperm]
+  simp only [Vector.ext_iff, getElem_toVector, getElem_invVector] at h ⊢
   grind
 
-theorem extInv (a b : Finperm n)  (h : ∀ (i : Nat) (hi : i < n), a⁻¹[i] = b⁻¹[i]) : a = b := by
+theorem eq_of_invVector_eq (a b : Finperm n) (h : a.invVector = b.invVector) : a = b := by
   suffices h : a.toVector = b.toVector ∧ a.invVector = b.invVector by grind [cases Finperm]
+  simp only [Vector.ext_iff, getElem_toVector, getElem_invVector] at h ⊢
   grind
+
+@[ext, grind ext]
+theorem ext (a b : Finperm n) (h : ∀ (i : Nat) (hi : i < n), a[i] = b[i]) : a = b :=
+  a.eq_of_toVector_eq b (Vector.ext h)
+
+theorem extInv (a b : Finperm n)  (h : ∀ (i : Nat) (hi : i < n), a⁻¹[i] = b⁻¹[i]) : a = b :=
+  a.eq_of_invVector_eq b (Vector.ext h)
 
 instance : DecidableEq (Finperm n) :=
   fun _ _ => decidable_of_decidable_of_iff Finperm.ext_iff.symm
@@ -103,23 +139,7 @@ instance : Subsingleton (Finperm 0) where allEq a b := by grind
 
 instance : Subsingleton (Finperm 1) where allEq a b := by grind
 
-theorem getElem_ne_iff (a : Finperm n) {i : Nat} (hi : i < n) {j : Nat} (hj : j < n) :
-    a[i] ≠ a[j] ↔ i ≠ j := by grind
 
-theorem eq_getElem_inv_iff (a : Finperm n) {i} (hi : i < n) (hj : j < n) :
-    i = a⁻¹[j] ↔ a[i] = j := by grind
-
-theorem ne_getElem_inv_iff (a : Finperm n) {i} (hi : i < n) (hj : j < n) :
-    i ≠ a⁻¹[j] ↔ a[i] ≠ j := by grind
-
-theorem getElem_inv_eq_iff (a : Finperm n) {i} (hi : i < n) (hj : j < n) :
-    a⁻¹[i] = j ↔ i = a[j] := by grind
-
-theorem getElem_inv_ne_iff (a : Finperm n) {i} (hi : i < n) (hj : j < n) :
-    a⁻¹[i] ≠ j ↔ i ≠ a[j] := by grind
-
-theorem exists_getElem_eq_of_lt (a : Finperm n) (i : Nat) (hi : i < n) :
-    ∃ (j : Nat) (hj : j < n), a[j] = i := ⟨a.invVector[i], a.getElem_toVector_getElem_invVector _ _⟩
 
 theorem nodup_toVector (a : Finperm n) : a.toVector.Nodup := by
   simp [Vector.nodup_iff_eq_of_getElem_eq]
@@ -176,6 +196,90 @@ instance : Std.LawfulIdentity (α := Finperm n) (· * ·) 1 where
 
 @[simp, grind =] theorem inv_mul_cancel : ∀ a : Finperm n, a⁻¹ * a = 1 := by grind
 @[simp, grind =] theorem mul_inv_cancel : ∀ a : Finperm n, a * a⁻¹ = 1 := by grind
+
+theorem mul_inv_eq_iff {a b c : Finperm n} : a * b⁻¹ = c ↔ a = c * b := by grind
+theorem inv_mul_eq_iff {a b c : Finperm n} : a⁻¹ * b = c ↔ b = a * c := by grind
+theorem eq_mul_inv_iff {a b c : Finperm n} : c = a * b⁻¹ ↔ c * b = a := by grind
+theorem eq_inv_mul_iff {a b c : Finperm n} : c = a⁻¹ * b ↔ a * c = b := by grind
+
+@[simp, grind =] theorem inv_mul_rev {a b : Finperm n} : (a * b)⁻¹ = b⁻¹ * a ⁻¹ := by
+  simp [eq_mul_inv_iff, inv_mul_eq_iff]
+
+@[simp, grind =]
+theorem swap_same {xs : Vector α n} {i : Nat} {hi} : xs.swap i i hi hi = xs := by grind
+
+
+/--
+For `a` an `Finperm n`, `a.swap i j hi hj` is the permutation which is the same except for switching
+the `i`th and `j`th values, which corresponds to multiplying on the right by a transposition.
+-/
+def swap (a : Finperm n) (i j : Nat)
+    (hi : i < n := by get_elem_tactic) (hj : j < n := by get_elem_tactic) : Finperm n where
+  toVector := a.toVector.swap i j
+  invVector := a.invVector.swap a[i] a[j]
+  getElem_invVector_getElem_toVector := fun k hk => by
+    simp only [Vector.getElem_swap, ite_getElem]
+    grind
+
+section Swap
+
+variable (a : Finperm n) (hi : i < n) (hj : j < n) (hk : k < n)
+
+@[simp, grind =] theorem inv_swap : (a.swap i j hi hj)⁻¹ = a⁻¹.swap a[i] a[j] := by
+  apply eq_of_toVector_eq
+  simp only [swap, inv_mk, toVector_inv, invVector_inv, getElem_inv_getElem]
+
+@[simp, grind =]
+theorem getElem_swap : (a.swap i j)[k] = a[swapVal i j k]'(by grind) := by
+  dsimp [swap]; grind
+
+@[grind =]
+theorem getElem_inv_swap : (a.swap i j hi hj)⁻¹[k] = a⁻¹[swapVal a[i] a[j] k]'(by grind) := by simp
+
+@[simp]
+theorem swap_self (i : Nat) (hi hi' : i < n) : a.swap i i hi hi' = a := by grind
+
+@[simp]
+theorem swap_swap (i j : Nat) (hi hi' : i < n) (hj hj' : j < n) :
+    (a.swap i j hi hj).swap i j hi' hj' = a := by ext; simp
+
+end Swap
+
+def transpose (i j : Nat) (hi : i < n := by get_elem_tactic)
+    (hj : j < n := by get_elem_tactic) := swap 1 i j hi hj
+
+section Transpose
+
+variable (a : Finperm n) (hi : i < n) (hj : j < n) (hk : k < n)
+
+@[simp, grind =]
+theorem getElem_transpose : (transpose i j hi hj)[k] = swapVal i j k := by grind [transpose]
+
+@[simp, grind =]
+theorem getElem_inv_transpose : (transpose i j hi hj)⁻¹[k] = swapVal i j k := by grind [transpose]
+
+@[simp, grind =] theorem transpose_self : transpose i i hi hi = 1 := by grind
+
+theorem transpose_mul_self : transpose i j hi hj * transpose i j hi hj = 1 := by grind
+
+theorem inv_transpose : (transpose i j hi hj)⁻¹ = transpose i j hi hj := by grind
+
+theorem mul_transpose : a * transpose i j hi hj = a.swap i j hi hj := by grind
+
+theorem transpose_mul : transpose i j hi hj * a = a.swap a⁻¹[i] a⁻¹[j] (by grind) (by grind) := by
+  rw (occs := .pos [1, 2]) [← a.inv_inv, ← inv_swap, ← inv_transpose, ← inv_mul_rev, mul_transpose]
+
+theorem transpose_conj : a * transpose i j hi hj * a⁻¹ =
+    transpose a[i] a[j] (by grind) (by grind) := by
+  simp [mul_transpose, transpose_mul, mul_inv_eq_iff]
+
+@[simp] theorem swap_transpose : (transpose i j hi hj).swap i j hi' hj' = 1 := by
+  ext; simp
+
+@[simp, grind =] theorem transpose_eq_one_iff : transpose i j hi hj = 1 ↔ i = j := by
+  simp only [Finperm.ext_iff]; grind
+
+end Transpose
 
 end Finperm
 
