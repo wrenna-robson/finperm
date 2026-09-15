@@ -18,6 +18,14 @@ section IsCongr
 
 variable {n m l i : Nat} {a : PermVector n} {b : PermVector m} {c : PermVector l}
 
+@[simp] theorem isCongr_refl (a : PermVector n) : a.IsCongr a := .inl ⟨n.le_refl, a.castGE_refl⟩
+
+theorem isCongr_rfl : a.IsCongr a := isCongr_refl a
+
+@[grind →] theorem IsCongr.symm (hab : a.IsCongr b) : b.IsCongr a := hab.elim Or.inr Or.inl
+
+theorem isCongr_comm : a.IsCongr b ↔ b.IsCongr a := by grind
+
 theorem isCongr_pointwise :
     a.IsCongr b ↔ (∀ i (hin : i < n) (him : i < m), a[i] = b[i]) ∧
     (∀ i, ∀ (hi : i < n), m ≤ i → a[i] = i) ∧
@@ -48,12 +56,14 @@ grind_pattern castGE_isCongr => a.castGE h
 
 @[simp, grind =] theorem castGE_eq_iff {h : n ≤ k} {h'} :
     a.castGE h = b.castGE h' ↔ a.IsCongr b := by
-  simp only [PermVector.ext_iff, getElem_castGE, isCongr_pointwise]
-  grind
+  unfold IsCongr
+  simp only [PermVector.ext_iff, getElem_castGE]
+  rcases Nat.lt_trichotomy n m with hnm | rfl | hnm <;> grind
 
 @[simp, grind =] theorem isCongr_castGE_castGE_iff {h : n ≤ k} {h' : m ≤ o} :
     (a.castGE h).IsCongr (b.castGE h') ↔ a.IsCongr b := by
-  simp only [isCongr_pointwise, getElem_castGE, dite_eq_right_iff]
+  rw [IsCongr]
+  simp only [castGE_castGE, castGE_eq_iff, exists_prop]
   grind
 
 instance {a : PermVector n} {b : PermVector m} : Decidable (a.IsCongr b) :=
@@ -62,17 +72,11 @@ instance {a : PermVector n} {b : PermVector m} : Decidable (a.IsCongr b) :=
 theorem IsCongr.eq {a' : PermVector n} (h : a.IsCongr a') : a = a' :=
   (h.eq_castGE_of_ge n.le_refl).symm.trans a'.castGE_refl
 
-@[simp] theorem isCongr_refl (a : PermVector n) : a.IsCongr a :=
-  isCongr_of_castGE_eq_right n.le_refl a.castGE_refl
 
-theorem isCongr_rfl : a.IsCongr a := isCongr_refl a
 
 @[simp, grind =] theorem isCongr_iff_eq {a' : PermVector n} : a.IsCongr a' ↔ a = a' :=
   ⟨IsCongr.eq, Eq.rec a.isCongr_refl⟩
 
-@[grind →] theorem IsCongr.symm (hab : a.IsCongr b) : b.IsCongr a := hab.elim Or.inr Or.inl
-
-theorem isCongr_comm : a.IsCongr b ↔ b.IsCongr a := by grind
 
 @[grind →] theorem IsCongr.trans (hab : a.IsCongr b) (hbc : b.IsCongr c) : a.IsCongr c := by
   rcases hab <;> rcases hbc <;> grind
