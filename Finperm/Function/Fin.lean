@@ -68,4 +68,14 @@ theorem Bijective.isEquiv_finInv {f : Fin n → Fin n} (hf : f.Bijective) :
   exact eq_of_beq <| (congrArg (f · == i) (Option.get_eq_getD _).symm).trans
     (Fin.get_find?_eq_true h)
 
+theorem findSome?_false : Fin.findSome? (α := α) (fun (_ : Fin n) => none) = none := by
+  simp
+
+theorem find?_false : Fin.find? (fun (_ : Fin n) => false) = none := findSome?_false
+
+theorem findSomeRev?_false : Fin.findSomeRev? (α := α) (fun (_ : Fin n) => none) = none := by
+  simp only [Fin.findSomeRev?_eq_none_iff, implies_true]
+
+theorem findRev?_false : Fin.findRev? (fun (_ : Fin n) => false) = none := findSome?_false
+
 end Function

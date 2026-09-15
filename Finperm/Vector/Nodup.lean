@@ -3,11 +3,21 @@ Copyright (c) 2026 Kry10. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Wrenna Robson
 -/
+module
+
+@[expose] public section
+
 namespace Vector
+
+instance [DecidableEq α] {a : α} :
+    DecidablePred (Vector.contains (α := α) (n := n) · a) := inferInstance
 
 def Nodup (v : Vector α n) : Prop := v.toList.Nodup
 
 theorem nodup_iff_toList_nodup {v : Vector α n} : v.Nodup ↔ v.toList.Nodup := Iff.rfl
+
+instance [DecidableEq α] : DecidablePred (Nodup (α := α) (n := n)) :=
+    fun _ => decidable_of_decidable_of_iff nodup_iff_toList_nodup.symm
 
 theorem nodup_iff_eq_of_getElem_eq {v : Vector α n} : v.Nodup ↔
     ∀ (i j : Nat) (_hi : i < n) (_hj : j < n), v[i] = v[j] → i = j :=

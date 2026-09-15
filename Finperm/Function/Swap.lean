@@ -16,10 +16,14 @@ def swapVal [BEq α] (a b x : α) : α := bif x == a then b else bif x == b then
 
 section SwapVal
 
-variable [BEq α] {a b x : α}
 
-@[grind =] theorem swapVal_apply_def (a b x : α) : swapVal a b x =
+@[grind =] theorem swapVal_apply_def [BEq α] (a b x : α) : swapVal a b x =
     bif x == a then b else bif x == b then a else x := rfl
+
+@[grind =] theorem swapVal_apply_of_decidableEq [DecidableEq α] (a b x : α) : swapVal a b x =
+    if x = a then b else if x = b then a else x := by grind
+
+variable [BEq α] {a b x : α}
 
 @[simp]
 theorem swapVal_apply_left [ReflBEq α] (a b : α) : swapVal a b a = b := by grind
@@ -75,8 +79,12 @@ theorem swapVal_injective_of_right [LawfulBEq α] :
 
 @[simp] theorem swapVal_eq_left_iff [LawfulBEq α] : swapVal a b x = a ↔ x = b := by grind
 @[simp] theorem swapVal_eq_right_iff [LawfulBEq α] : swapVal a b x = b ↔ x = a := by grind
-theorem swapVal_ne_left_iff [LawfulBEq α] : swapVal a b x ≠ a ↔ x ≠ b := by grind
+@[simp] theorem swapVal_apply_eq_self_iff [LawfulBEq α] : swapVal a b x = x ↔
+    (x ≠ a ∧ x ≠ b) ∨ a = b := by grind
+theorem swapVal_ne_left_iff [LawfulBEq α] : swapVal a b x ≠ a ↔ x ≠ b := by simp
 theorem swapVal_ne_right_iff [LawfulBEq α] : swapVal a b x ≠ b ↔ x ≠ a := by grind
+@[simp] theorem swapVal_apply_ne_self_iff [LawfulBEq α] : swapVal a b x ≠ x ↔
+    (x = a ∨ x = b) ∧ a ≠ b := by grind
 
 theorem swapVal_eq_iff [LawfulBEq α] : swapVal a b = swapVal c d ↔
     a = c ∧ b = d ∨ a = d ∧ b = c ∨ a = b ∧ c = d := by
@@ -84,14 +92,14 @@ theorem swapVal_eq_iff [LawfulBEq α] : swapVal a b = swapVal c d ↔
   · intro h
     have H1 := congrFun h a
     have H2 := congrFun h c
-    clear h
     simp at H1 H2
-    subst H2
-    simp [eq_swapVal_apply_iff] at H1
     grind
   · rintro (⟨rfl, rfl⟩ | ⟨rfl, rfl⟩| ⟨rfl, rfl⟩)
     · rfl
     · exact swapVal_comm a b
     · exact swapVal_self.trans swapVal_self.symm
+
+theorem Injective.apply_swapVal [BEq β] [LawfulBEq α] [LawfulBEq β] {f : α → β}
+    (hf : f.Injective) : f (swapVal a b c) = swapVal (f a) (f b) (f c) := by grind
 
 end SwapVal
