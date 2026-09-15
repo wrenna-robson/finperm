@@ -80,6 +80,9 @@ theorem minLen_transpose {i j : Nat} (hi : i < n) (hj : j < n) :
   · simp only [minLen_eq_succ_iff, getElem_transpose]
     grind
 
+@[simp, grind =] theorem minLen_castGE{h : n ≤ m} : (a.castGE h).minLen = a.minLen :=
+ Nat.le_antisymm (by grind [minLen_le_iff]) (by grind [minLen_le_iff])
+
 end MinLen
 
 def minPerm {n : Nat} (a : Finperm n) : Finperm a.minLen := let m := a.minLen; {
@@ -112,13 +115,10 @@ theorem minLen_minPerm : a.minPerm.minLen = a.minLen := by grind
 
 @[simp] theorem inv_minPerm : (a.minPerm)⁻¹ = a⁻¹.minPerm.cast a.minLen_inv := by grind
 
-@[simp, grind =] theorem castGE_minPerm : a.minPerm.castGE a.minLen_le = a := by
+@[simp, grind =] theorem minPerm_castGE : a.minPerm.castGE a.minLen_le = a := by
+  ext
+  simp only [getElem_castGE, getElem_minPerm]
   grind
-
-theorem hmul_minPerm {m : Nat} (b : Finperm m) :
-    (a.minPerm.hmul b.minPerm).castGE (by grind) = a.hmul b := by
-  conv => rhs; rw [← a.castGE_minPerm, ← b.castGE_minPerm]
-  rw [hmul_castGE_left, hmul_castGE_right, castGE_castGE]
 
 end MinPerm
 

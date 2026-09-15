@@ -58,6 +58,9 @@ instance : Inv (Finperm n) where
 
 @[simp, grind =] theorem inv_inv (a : Finperm n) : a⁻¹⁻¹ = a := rfl
 
+@[simp, grind =] theorem inv_inj  (a b : Finperm n) : a⁻¹ = b⁻¹ ↔ a = b :=
+  ⟨fun h => a.inv_inv ▸ h ▸ b.inv_inv, fun h => h ▸ rfl⟩
+
 theorem isEquiv_get_getInv (a : Finperm n) : a.get.IsEquiv a⁻¹.get :=
     IsSplitting.isEquiv_fin <| fun _ => Fin.ext <| (a.getElem_toVector_getElem_invVector _ _).2
 
@@ -138,8 +141,6 @@ instance : DecidableEq (Finperm n) :=
 instance : Subsingleton (Finperm 0) where allEq a b := by grind
 
 instance : Subsingleton (Finperm 1) where allEq a b := by grind
-
-
 
 theorem nodup_toVector (a : Finperm n) : a.toVector.Nodup := by
   simp [Vector.nodup_iff_eq_of_getElem_eq]

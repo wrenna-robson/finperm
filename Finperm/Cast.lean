@@ -26,50 +26,86 @@ variable {n m : Nat} (a : Finperm n) (h : n = m)
 
 grind_pattern getElem_cast => (a.cast h)[i]
 
-theorem getElem_inv_cast {i : Nat} (hi : i < m) :
+@[simp] theorem getElem_inv_cast {i : Nat} (hi : i < m) :
     (a.cast h)⁻¹[i] = a⁻¹[i]'(by omega) := by subst h; rfl
+
+grind_pattern getElem_inv_cast => (a.cast h)⁻¹[i]
 
 @[simp] theorem cast_rfl : a.cast rfl = a := rfl
 
 @[simp] theorem cast_cast {k : Nat} (h' : m = k) : (a.cast h).cast h' = a.cast (h.trans h') := by
   subst h; subst h'; rfl
 
-@[simp, grind =] theorem inv_cast : (a.cast h)⁻¹ = a⁻¹.cast h := by
-  grind [getElem_cast, getElem_inv_cast]
+@[simp, grind =] theorem cast_inv : a⁻¹.cast h = (a.cast h)⁻¹ := by grind
+
+@[simp, grind =] theorem mul_cast {b : Finperm n} : a.cast h * b.cast h = (a * b).cast h := by
+  ext
+  simp only [getElem_mul, getElem_cast]
+
+@[simp, grind =] theorem one_cast : (1 : Finperm n).cast h = 1 := by
+  ext
+  simp only [getElem_one, getElem_cast]
+
+@[simp, grind =] theorem cast_eq_one : a.cast h = 1 ↔ a = 1 := by
+  simp only [Finperm.ext_iff, getElem_one, getElem_cast]
+  grind
 
 end Cast
 
 /-- `a.castGE h` is `a`, reinterpreted as a permutation of the larger domain `Finperm k`
 (`h : m ≤ k`) by fixing every point outside `a`'s original domain. -/
 def castGE {m : Nat} (a : Finperm m) {k : Nat} (h : m ≤ k) : Finperm k where
-  toVector := (a.toVector ++ (Vector.range (k - m)).map (· + m)).cast (by omega)
-  invVector := (a.invVector ++ (Vector.range (k - m)).map (· + m)).cast (by omega)
+  toVector := (a.toVector ++ Vector.range' m (k - m)).cast (by omega)
+  invVector := (a.invVector ++ Vector.range' m (k - m)).cast (by omega)
   getElem_invVector_getElem_toVector := fun i hi => by
     grind [Vector.getElem_cast]
 
 section CastGE
 
-variable {m k : Nat} (a : Finperm m) (h : m ≤ k)
+variable {m k : Nat} (a : Finperm m) {h : m ≤ k}
 
-@[simp, grind =] theorem getElem_castGE {i : Nat} (hi : i < k) :
+@[simp] theorem getElem_castGE {i : Nat} (hi : i < k) :
     (a.castGE h)[i] = if hi' : i < m then a[i] else i := by
   simp only [castGE, getElem_mk]
   grind [Vector.getElem_cast]
 
-theorem getElem_inv_castGE {i : Nat} (hi : i < k) :
+grind_pattern getElem_castGE => (a.castGE h)[i]
+
+@[simp, grind =] theorem getElem_inv_castGE {i : Nat} (hi : i < k) :
     (a.castGE h)⁻¹[i] = if hi' : i < m then a⁻¹[i] else i := by
   simp only [castGE, inv_mk, getElem_mk]
   grind [Vector.getElem_cast]
 
-@[simp, grind =] theorem inv_castGE : (a.castGE h)⁻¹ = a⁻¹.castGE h := by grind [getElem_inv_castGE]
+grind_pattern getElem_inv_castGE => (a.castGE h)⁻¹[i]
+
+@[simp, grind =] theorem castGE_inv : a⁻¹.castGE h = (a.castGE h)⁻¹ := by grind
+
+@[simp] theorem castGE_eq_cast (h : m = n) :
+    a.castGE (Nat.le_of_eq h) = a.cast h := by grind
+
+theorem castGE_refl : a.castGE (Nat.le_refl _) = a := by simp
 
 @[simp, grind =] theorem castGE_castGE {l : Nat} (h' : k ≤ l) :
     (a.castGE h).castGE h' = a.castGE (Nat.le_trans h h') := by grind
 
-@[simp, grind =] theorem mul_castGE (b : Finperm m) :
+theorem castGE_inj {x y : Finperm m} : x.castGE h = y.castGE h ↔ x = y := by
+  simp only [Finperm.ext_iff, getElem_castGE]
+  grind
+
+@[simp, grind =]
+theorem mul_castGE {a b : Finperm n} (h : n ≤ m) :
     a.castGE h * b.castGE h = (a * b).castGE h := by
   ext
   simp only [getElem_mul, getElem_castGE]
+  grind
+
+@[simp, grind =] theorem one_castGE : (1 : Finperm m).castGE h = 1 := by
+  ext
+  simp only [getElem_one, getElem_castGE]
+  grind
+
+@[simp, grind =] theorem castGE_eq_one : a.castGE h = 1 ↔ a = 1 := by
+  simp only [Finperm.ext_iff, getElem_one, getElem_castGE]
   grind
 
 end CastGE
