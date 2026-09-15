@@ -155,6 +155,9 @@ theorem isCongr_minPerm_minPerm : a.minPerm.IsCongr b.minPerm ↔ a.IsCongr b :=
 
 theorem inv_minPerm_isCongr_inv : (a.minPerm)⁻¹.IsCongr a⁻¹ := (a.minPerm_isCongr).inv_inv
 
+theorem minPerm_hmul_minPerm_isCongr_hmul : (a.minPerm.hmul b.minPerm).IsCongr (a.hmul b) :=
+  a.minPerm_isCongr.hmul_hmul b.minPerm_isCongr
+
 end MinPerm
 
 end IsCongr
