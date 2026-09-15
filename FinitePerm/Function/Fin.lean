@@ -6,7 +6,7 @@ Authors: Wrenna Robson
 module
 
 public import Batteries.Data.Fin.Lemmas
-public import Finperm.Function.Swap
+public import FinitePerm.Function.Swap
 
 @[expose] public section
 

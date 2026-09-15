@@ -1,2 +1,2 @@
-# finperm
+# FinitePerm
 Finite permutations library.

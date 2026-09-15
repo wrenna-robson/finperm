@@ -4,23 +4,23 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Wrenna Robson
 -/
 module
-public import Finperm.Basic
-public import Finperm.HMul
+public import FinitePerm.Basic
+public import FinitePerm.HMul
 public import Batteries.Data.Fin.Basic
 
 @[expose] public section
 
-namespace Finperm
+namespace PermVector
 
-@[irreducible] def minLen {n : Nat} (a : Finperm n) : Nat :=
+@[irreducible] def minLen {n : Nat} (a : PermVector n) : Nat :=
   ((Fin.findRev? (fun i : Fin n => (a[i.1] != i.1))).map (·.val.succ)).getD 0
 
 section MinLen
 
-variable {n j : Nat} (a b : Finperm n)
+variable {n j : Nat} (a b : PermVector n)
 
 @[simp] theorem minLen_eq_zero_iff : a.minLen = 0 ↔ a = 1 := by
-  simp [minLen, Option.getD_eq_iff, Fin.forall_iff, Finperm.ext_iff]
+  simp [minLen, Option.getD_eq_iff, Fin.forall_iff, PermVector.ext_iff]
 
 @[simp] theorem minLen_eq_succ_iff : a.minLen = j + 1 ↔
     (∃ (hj : j < n), a[j] ≠ j) ∧ (∀ (i : Nat) (h : i < n), j < i → a[i] = i) := by
@@ -30,10 +30,10 @@ theorem minLen_ne_one : a.minLen ≠ 1 := by
   simp only [ne_eq, minLen_eq_succ_iff, not_and, Classical.not_forall, forall_exists_index]
   grind
 
-@[simp, grind =] theorem minLen_one : (1 : Finperm n).minLen = 0 := by simp
+@[simp, grind =] theorem minLen_one : (1 : PermVector n).minLen = 0 := by simp
 
-@[simp, grind =] theorem minLen_zero_perm {a} : (a : Finperm 0).minLen = 0 := by simp [unique_zero]
-@[simp, grind =] theorem minLen_one_perm {a} : (a : Finperm 1).minLen = 0 := by simp [unique_one]
+@[simp, grind =] theorem minLen_zero_perm {a} : (a : PermVector 0).minLen = 0 := by simp [unique_zero]
+@[simp, grind =] theorem minLen_one_perm {a} : (a : PermVector 1).minLen = 0 := by simp [unique_one]
 
 theorem minLen_ne_zero_iff : a.minLen ≠ 0 ↔ a ≠ 1 := by simp
 
@@ -85,7 +85,7 @@ theorem minLen_transpose {i j : Nat} (hi : i < n) (hj : j < n) :
 
 end MinLen
 
-def minPerm {n : Nat} (a : Finperm n) : Finperm a.minLen := let m := a.minLen; {
+def minPerm {n : Nat} (a : PermVector n) : PermVector a.minLen := let m := a.minLen; {
   toVector := (a.toVector.take m).cast (by grind)
   invVector := (a.invVector.take m).cast (by grind)
   getElem_invVector_getElem_toVector := by
@@ -95,7 +95,7 @@ def minPerm {n : Nat} (a : Finperm n) : Finperm a.minLen := let m := a.minLen; {
 
 section MinPerm
 
-variable {n : Nat} (a : Finperm n)
+variable {n : Nat} (a : PermVector n)
 
 @[simp, grind =]
 theorem getElem_minPerm {i : Nat} (hi : i < a.minLen) :
@@ -109,7 +109,7 @@ theorem getElem_inv_minPerm {i : Nat} (hi : i < a.minLen) :
     getElem_mk]
 
 @[simp] theorem minPerm_eq_one_iff : a.minPerm = 1 ↔ a = 1 := by
-  simp only [Finperm.ext_iff, getElem_minPerm] <;> grind
+  simp only [PermVector.ext_iff, getElem_minPerm] <;> grind
 
 theorem minLen_minPerm : a.minPerm.minLen = a.minLen := by grind
 
@@ -122,4 +122,4 @@ theorem minLen_minPerm : a.minPerm.minLen = a.minLen := by grind
 
 end MinPerm
 
-end Finperm
+end PermVector

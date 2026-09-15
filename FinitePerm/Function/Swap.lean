@@ -6,7 +6,7 @@ Authors: Wrenna Robson
 
 module
 
-public import Finperm.Function.Basic
+public import FinitePerm.Function.Basic
 
 @[expose] public section
 

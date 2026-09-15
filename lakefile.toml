@@ -1,6 +1,6 @@
-name = "finperm"
+name = "finiteperm"
 version = "0.1.0"
-defaultTargets = ["Finperm"]
+defaultTargets = ["FinitePerm"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -10,4 +10,4 @@ name = "batteries"
 scope = "leanprover-community"
 
 [[lean_lib]]
-name = "Finperm"
+name = "FinitePerm"
