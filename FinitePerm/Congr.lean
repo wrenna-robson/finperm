@@ -205,6 +205,10 @@ structure FinitePerm where
   toPermOf_minLen : toPermOf.minLen = len
   deriving DecidableEq
 
+
+def PermVector.toFinitePerm (a : PermVector n) : FinitePerm :=
+  ⟨a.minLen, a.minPerm, a.minLen_minPerm⟩
+
 namespace FinitePerm
 
 @[ext] theorem ext {b : FinitePerm} (hab : a.toPermOf.IsCongr b.toPermOf) :
@@ -220,6 +224,7 @@ namespace FinitePerm
 instance : Inv FinitePerm where
   inv a := ⟨a.len, a.toPermOf⁻¹, a.toPermOf.minLen_inv.trans a.toPermOf_minLen⟩
 
+@[simp, grind =]
 theorem inv_len (a : FinitePerm) : (a⁻¹).len = a.len := rfl
 
 @[simp, grind =]
@@ -227,14 +232,16 @@ theorem inv_toPermOf (a : FinitePerm) : (a⁻¹).toPermOf = a.toPermOf⁻¹ := r
 
 instance : One FinitePerm := ⟨⟨0, 1, PermVector.minLen_one⟩⟩
 
+@[simp, grind =]
 theorem one_len : (1 : FinitePerm).len = 0 := rfl
 
 @[simp, grind =]
 theorem one_toPermOf : (1 : FinitePerm).toPermOf = 1 := rfl
 
-instance mul : Mul FinitePerm where
-  mul a b := let ab := a.toPermOf.hmul b.toPermOf; ⟨ab.minLen, ab.minPerm, ab.minLen_minPerm⟩
+instance : Mul FinitePerm where
+  mul a b := (a.toPermOf.hmul b.toPermOf).toFinitePerm
 
+@[simp, grind =]
 theorem mul_len (a b : FinitePerm) : (a * b).len = (a.toPermOf.hmul b.toPermOf).minLen := rfl
 
 @[simp, grind =]

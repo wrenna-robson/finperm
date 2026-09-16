@@ -36,7 +36,6 @@ theorem getElem_inv_hmul {i : Nat} (hi : i < max m n) :
 @[simp, grind =] theorem hmul_one : a.hmul (1 : PermVector n) = a.castGE (by omega) := by
   simp only [hmul, one_castGE, Std.LawfulRightIdentity.right_id]
 
-
 @[simp, grind =] theorem inv_hmul_cancel : a⁻¹.hmul a = 1 := by
   simp only [hmul, Std.le_refl, Nat.max_eq_right, castGE_eq_cast, cast_inv,
     PermVector.inv_mul_cancel]
