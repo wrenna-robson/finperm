@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Wrenna Robson
 -/
 module
+public import FinitePerm.Vector.Basic
 public import FinitePerm.Vector.Nodup
 public import FinitePerm.Function.Fin
 import FinitePerm.Logic.Basic
@@ -114,6 +115,14 @@ grind_pattern getElem_getElem_inv => a[a⁻¹[i]]
 
 grind_pattern getElem_inv_getElem => a⁻¹[a[i]]
 
+@[simp] theorem forall_getElem {a : PermVector n} (p : (i : Nat) → i < n -> Prop) :
+    (∀ i (hi : i < n), p a[i] (a.getElem_lt i hi)) ↔ ∀ i (hi : i < n), p i hi :=
+  ⟨fun h i hi => have H := h a⁻¹[i] (a⁻¹.getElem_lt _ _); by grind, fun h => by simp [h]⟩
+
+@[simp] theorem exists_getElem {a : PermVector n} (p : (i : Nat) → i < n -> Prop) :
+    (∃ (i : Nat) (hi : i < n), p a[i] (a.getElem_lt i hi)) ↔ ∃ (i : Nat) (hi : i < n), p i hi :=
+  ⟨fun h => by grind, fun ⟨i, hi, h⟩ => ⟨a⁻¹[i], a⁻¹.getElem_lt _ _, by grind⟩⟩
+
 @[simp]
 theorem getElem_inv_eq_self_iff (a : PermVector n) {i : Nat} (hi : i < n) :
     a⁻¹[i] = i ↔ a[i] = i := by grind
@@ -128,7 +137,7 @@ theorem eq_of_invVector_eq (a b : PermVector n) (h : a.invVector = b.invVector) 
   simp only [Vector.ext_iff, getElem_toVector, getElem_invVector] at h ⊢
   grind
 
-@[ext, grind ext]
+@[ext]
 theorem ext (a b : PermVector n) (h : ∀ (i : Nat) (hi : i < n), a[i] = b[i]) : a = b :=
   a.eq_of_toVector_eq b (Vector.ext h)
 
@@ -138,9 +147,9 @@ theorem extInv (a b : PermVector n)  (h : ∀ (i : Nat) (hi : i < n), a⁻¹[i] 
 instance : DecidableEq (PermVector n) :=
   fun _ _ => decidable_of_decidable_of_iff PermVector.ext_iff.symm
 
-instance : Subsingleton (PermVector 0) where allEq a b := by grind
+instance : Subsingleton (PermVector 0) where allEq a b := by ext; grind
 
-instance : Subsingleton (PermVector 1) where allEq a b := by grind
+instance : Subsingleton (PermVector 1) where allEq a b := by ext; grind
 
 theorem nodup_toVector (a : PermVector n) : a.toVector.Nodup := by
   simp [Vector.nodup_iff_eq_of_getElem_eq]
@@ -175,9 +184,9 @@ instance : Inhabited (PermVector n) := ⟨1⟩
 @[simp]
 theorem default_eq : (default : PermVector n) = 1 := rfl
 
-theorem unique_zero : ∀ a : PermVector 0, a = 1 := by grind
+theorem unique_zero : ∀ a : PermVector 0, a = 1 := by intros; ext; grind
 
-theorem unique_one : ∀ a : PermVector 1, a = 1 := by grind
+theorem unique_one : ∀ a : PermVector 1, a = 1 := by intros; ext; grind
 
 instance : Mul (PermVector n) where
   mul a b := {
@@ -188,27 +197,44 @@ instance : Mul (PermVector n) where
 @[simp, grind =] theorem getElem_mul (a b : PermVector n) {i : Nat} (hi : i < n) :
     (a * b)[i] = a[b[i]] := Vector.getElem_mapFinIdx _
 
+@[simp, grind =] theorem getElem_inv_mul (a b : PermVector n) {i : Nat} (hi : i < n) :
+    (a * b)⁻¹[i] = b⁻¹[a⁻¹[i]] := Vector.getElem_mapFinIdx _
+
+@[grind =, grind =_] theorem mul_assoc (a b c : PermVector n) : a * b * c = a * (b * c) := by
+  ext; grind
+
+@[simp, grind =] theorem one_mul (a : PermVector n) : 1 * a = a := by
+  ext; grind
+
+@[simp, grind =] theorem mul_one (a : PermVector n) : a * 1 = a := by
+  ext; grind
+
+@[simp, grind =] theorem inv_mul_cancel (a : PermVector n) : a⁻¹ * a = 1 := by
+  intros; ext; grind
+@[simp, grind =] theorem mul_inv_cancel (a : PermVector n) : a * a⁻¹ = 1 := by
+  intros; ext; grind
+
+theorem isEquiv_mul_left {a : PermVector n} : IsEquiv (a * ·) (a⁻¹ * ·) :=
+  ⟨fun _ => by grind, fun _ => by grind⟩
+
+theorem isEquiv_mul_right {a : PermVector n} : IsEquiv (· * a) (· * a⁻¹) :=
+  ⟨fun _ => by grind, fun _ => by grind⟩
+
+theorem mul_left_cancel {a b c : PermVector n} : a * b = a * c ↔ b = c :=
+  a.isEquiv_mul_left.bijective_left.injective.eq_iff
+
+theorem mul_right_cancel {a b c : PermVector n} : b * a = c * a ↔ b = c :=
+  a.isEquiv_mul_right.bijective_left.injective.eq_iff
+
+@[simp, grind =] theorem mul_inv_rev {a b : PermVector n} :
+    (a * b)⁻¹ = b⁻¹ * a ⁻¹ := (a * b).isEquiv_mul_left.bijective_left.injective (by grind)
+
 instance : Std.Associative (α := PermVector n) (· * ·) where
-  assoc := by grind
+  assoc := mul_assoc
 
 instance : Std.LawfulIdentity (α := PermVector n) (· * ·) 1 where
-  left_id := by grind
-  right_id := by grind
-
-@[simp, grind =] theorem inv_mul_cancel : ∀ a : PermVector n, a⁻¹ * a = 1 := by grind
-@[simp, grind =] theorem mul_inv_cancel : ∀ a : PermVector n, a * a⁻¹ = 1 := by grind
-
-theorem mul_inv_eq_iff {a b c : PermVector n} : a * b⁻¹ = c ↔ a = c * b := by grind
-theorem inv_mul_eq_iff {a b c : PermVector n} : a⁻¹ * b = c ↔ b = a * c := by grind
-theorem eq_mul_inv_iff {a b c : PermVector n} : c = a * b⁻¹ ↔ c * b = a := by grind
-theorem eq_inv_mul_iff {a b c : PermVector n} : c = a⁻¹ * b ↔ a * c = b := by grind
-
-@[simp, grind =] theorem inv_mul_rev {a b : PermVector n} : (a * b)⁻¹ = b⁻¹ * a ⁻¹ := by
-  simp [eq_mul_inv_iff, inv_mul_eq_iff]
-
-@[simp, grind =]
-theorem swap_same {xs : Vector α n} {i : Nat} {hi} : xs.swap i i hi hi = xs := by grind
-
+  left_id := one_mul
+  right_id := mul_one
 
 /--
 For `a` an `PermVector n`, `a.swap i j hi hj` is the permutation which is the same except for switching
@@ -238,7 +264,7 @@ theorem getElem_swap : (a.swap i j)[k] = a[swapVal i j k]'(by grind) := by
 theorem getElem_inv_swap : (a.swap i j hi hj)⁻¹[k] = a⁻¹[swapVal a[i] a[j] k]'(by grind) := by simp
 
 @[simp]
-theorem swap_self (i : Nat) (hi hi' : i < n) : a.swap i i hi hi' = a := by grind
+theorem swap_self (i : Nat) (hi hi' : i < n) : a.swap i i hi hi' = a := by ext; grind
 
 @[simp]
 theorem swap_swap (i j : Nat) (hi hi' : i < n) (hj hj' : j < n) :
@@ -259,20 +285,22 @@ theorem getElem_transpose : (transpose i j hi hj)[k] = swapVal i j k := by grind
 @[simp, grind =]
 theorem getElem_inv_transpose : (transpose i j hi hj)⁻¹[k] = swapVal i j k := by grind [transpose]
 
-@[simp, grind =] theorem transpose_self : transpose i i hi hi = 1 := by grind
+@[simp, grind =] theorem transpose_self : transpose i i hi hi = 1 := by ext; grind
 
-theorem transpose_mul_self : transpose i j hi hj * transpose i j hi hj = 1 := by grind
+theorem transpose_mul_self : transpose i j hi hj * transpose i j hi hj = 1 := by ext; grind
 
-theorem inv_transpose : (transpose i j hi hj)⁻¹ = transpose i j hi hj := by grind
+theorem inv_transpose : (transpose i j hi hj)⁻¹ = transpose i j hi hj := by ext; grind
 
-theorem mul_transpose : a * transpose i j hi hj = a.swap i j hi hj := by grind
+theorem mul_transpose : a * transpose i j hi hj = a.swap i j hi hj := by ext; grind
 
 theorem transpose_mul : transpose i j hi hj * a = a.swap a⁻¹[i] a⁻¹[j] (by grind) (by grind) := by
-  rw (occs := .pos [1, 2]) [← a.inv_inv, ← inv_swap, ← inv_transpose, ← inv_mul_rev, mul_transpose]
+  rw (occs := .pos [1, 2]) [← a.inv_inv, ← inv_swap, ← inv_transpose,
+    ← PermVector.mul_inv_rev, mul_transpose]
 
 theorem transpose_conj : a * transpose i j hi hj * a⁻¹ =
     transpose a[i] a[j] (by grind) (by grind) := by
-  simp [mul_transpose, transpose_mul, mul_inv_eq_iff]
+  simp only [mul_transpose, ← a.isEquiv_mul_right.bijective_left.injective.eq_iff, mul_assoc,
+    inv_mul_cancel, mul_one, transpose_mul, getElem_inv_getElem]
 
 @[simp] theorem swap_transpose : (transpose i j hi hj).swap i j hi' hj' = 1 := by
   ext; simp

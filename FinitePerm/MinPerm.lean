@@ -39,7 +39,7 @@ theorem minLen_ne_zero_iff : a.minLen ≠ 0 ↔ a ≠ 1 := by simp
 
 @[simp] theorem minLen_pos_iff : 0 < a.minLen ↔ a ≠ 1 := by simp [Nat.pos_iff_ne_zero]
 
-@[grind .] theorem minLen_eq_iff_getElem_ne : a.minLen = n ↔ ∀ (hn : n ≠ 0), a[n - 1] ≠ n - 1 := by
+theorem minLen_eq_iff_getElem_ne : a.minLen = n ↔ ∀ (hn : n ≠ 0), a[n - 1] ≠ n - 1 := by
   cases n with | zero => simp | succ j => simp only [minLen_eq_succ_iff]; grind
 
 theorem minLen_le_iff {m : Nat} : a.minLen ≤ m ↔ ∀ i, m ≤ i → (hi : i < n) → a[i] = i := by
@@ -54,13 +54,12 @@ theorem minLen_le_iff {m : Nat} : a.minLen ≤ m ↔ ∀ i, m ≤ i → (hi : i 
 theorem lt_minLen_iff {m : Nat} : m < a.minLen ↔
     ∃ i, m ≤ i ∧ ∃ (hi : i < n), a[i] ≠ i := by simp [← Nat.not_le, minLen_le_iff]
 
-@[grind =]
 theorem minLen_le_iff_getElem_eq {j : Nat} (hj : j < n) (hle : a.minLen ≤ j + 1) :
     a.minLen ≤ j ↔ a[j] = j := by grind [minLen_le_iff]
 
 @[grind <=]
 theorem getElem_eq_self_of_minLen_le (i : Nat) (hi : i < n) (hle : a.minLen ≤ i) :
-    a[i] = i := by grind
+    a[i] = i := by grind [minLen_le_iff]
 
 @[grind =>]
 theorem exists_getElem_ne_of_lt_minLen {m : Nat} (h : m < a.minLen) :
@@ -80,8 +79,9 @@ theorem minLen_transpose {i j : Nat} (hi : i < n) (hj : j < n) :
   · simp only [minLen_eq_succ_iff, getElem_transpose]
     grind
 
-@[simp, grind =] theorem minLen_castGE{h : n ≤ m} : (a.castGE h).minLen = a.minLen :=
- Nat.le_antisymm (by grind [minLen_le_iff]) (by grind [minLen_le_iff])
+@[simp, grind =] theorem minLen_castGE {h : n ≤ m} : (a.castGE h).minLen = a.minLen :=
+  Nat.le_antisymm (by grind [minLen_le_iff, getElem_castGE])
+  (by grind [minLen_le_iff, getElem_castGE])
 
 end MinLen
 
@@ -111,14 +111,17 @@ theorem getElem_inv_minPerm {i : Nat} (hi : i < a.minLen) :
 @[simp] theorem minPerm_eq_one_iff : a.minPerm = 1 ↔ a = 1 := by
   simp only [PermVector.ext_iff, getElem_minPerm] <;> grind
 
-theorem minLen_minPerm : a.minPerm.minLen = a.minLen := by grind
-
-@[simp] theorem inv_minPerm : (a.minPerm)⁻¹ = a⁻¹.minPerm.cast a.minLen_inv := by grind
-
 @[simp, grind =] theorem minPerm_castGE : a.minPerm.castGE a.minLen_le = a := by
   ext
   simp only [getElem_castGE, getElem_minPerm]
   grind
+
+theorem minLen_minPerm : a.minPerm.minLen = a.minLen :=
+  (minLen_castGE a.minPerm).symm.trans (congrArg minLen a.minPerm_castGE)
+
+@[simp] theorem inv_minPerm :  a⁻¹.minPerm = (a.minPerm.cast a.minLen_inv.symm)⁻¹ := by
+  ext
+  simp only [getElem_minPerm, getElem_inv_cast, getElem_inv_minPerm]
 
 end MinPerm
 
