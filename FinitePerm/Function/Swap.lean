@@ -56,12 +56,12 @@ theorem swapVal_comm [LawfulBEq α] (a b : α) : swapVal a b = swapVal b a := by
 @[simp] theorem swapVal_swapVal [LawfulBEq α] : swapVal a b (swapVal a b x) = x := by grind
 
 theorem isEquiv_swapVal_swapVal [LawfulBEq α] :
-    IsEquiv (swapVal a b) (swapVal a b) :=
-⟨fun _ => swapVal_apply_self, fun _ => swapVal_apply_self⟩
+    Inverse (swapVal a b) (swapVal a b) :=
+inverse_of_leftInverse_of_leftInverse (fun _ => swapVal_apply_self) (fun _ => swapVal_apply_self)
 
 theorem isEquiv_swapVal_swapVal_flip [LawfulBEq α] :
-    IsEquiv (swapVal a b) (swapVal b a) :=
-  ⟨fun _ => swapVal_apply_flip, fun _ => by rw [swapVal_comm]; exact swapVal_apply_self⟩
+    Inverse (swapVal a b) (swapVal b a) :=
+  inverse_of_leftInverse_of_leftInverse (fun _ => swapVal_apply_flip) (fun _ => swapVal_apply_flip)
 
 theorem swapVal_bijective [LawfulBEq α] :
     (swapVal a b).Bijective := isEquiv_swapVal_swapVal.bijective_left

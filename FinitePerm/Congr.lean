@@ -263,20 +263,20 @@ theorem mul_toPermOf (a b : FinitePerm) : (a * b).toPermOf =
 @[simp, grind =] protected theorem mul_inv_cancel (a : FinitePerm) : a * a⁻¹ = 1 := by
   ext; simp
 
-theorem isEquiv_mul_left {a : FinitePerm} : IsEquiv (a * ·) (a⁻¹ * ·) :=
-  ⟨fun _ => by grind, fun _ => by grind⟩
+theorem inverse_mul_left {a : FinitePerm} : Inverse (a * ·) (a⁻¹ * ·) :=
+  inverse_of_leftInverse_of_leftInverse (fun _ => by grind) (fun _ => by grind)
 
-theorem isEquiv_mul_right {a : FinitePerm} : IsEquiv (· * a) (· * a⁻¹) :=
-  ⟨fun _ => by grind, fun _ => by grind⟩
+theorem inverse_mul_right {a : FinitePerm} : Inverse (· * a) (· * a⁻¹) :=
+  inverse_of_leftInverse_of_leftInverse (fun _ => by grind) (fun _ => by grind)
 
 protected theorem mul_left_cancel {a b c : FinitePerm} : a * b = a * c ↔ b = c :=
-  a.isEquiv_mul_left.bijective_left.injective.eq_iff
+  a.inverse_mul_left.bijective_left.injective.eq_iff
 
 protected theorem mul_right_cancel {a b c : FinitePerm} : b * a = c * a ↔ b = c :=
-  a.isEquiv_mul_right.bijective_left.injective.eq_iff
+  a.inverse_mul_right.bijective_left.injective.eq_iff
 
 @[simp, grind =] protected theorem mul_inv_rev {a b : FinitePerm} :
-    (a * b)⁻¹ = b⁻¹ * a ⁻¹ := (a * b).isEquiv_mul_left.bijective_left.injective (by grind)
+    (a * b)⁻¹ = b⁻¹ * a ⁻¹ := (a * b).inverse_mul_left.bijective_left.injective (by grind)
 
 instance : Std.Associative (α := FinitePerm) (· * ·) where
   assoc := mul_assoc

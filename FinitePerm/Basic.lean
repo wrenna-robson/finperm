@@ -62,8 +62,11 @@ instance : Inv (PermVector n) where
 @[simp, grind =] theorem inv_inj  (a b : PermVector n) : a⁻¹ = b⁻¹ ↔ a = b :=
   ⟨fun h => a.inv_inv ▸ h ▸ b.inv_inv, fun h => h ▸ rfl⟩
 
-theorem isEquiv_get_getInv (a : PermVector n) : a.get.IsEquiv a⁻¹.get :=
-    IsSplitting.isEquiv_fin <| fun _ => Fin.ext <| (a.getElem_toVector_getElem_invVector _ _).2
+theorem inverse_getInv_getInv (a : PermVector n) : a⁻¹.get.Inverse a.get :=
+    LeftInverse.inverse_fin <| fun _ => Fin.ext <| (a.getElem_invVector_getElem_toVector _ _).2
+
+theorem inverse_get_getInv (a : PermVector n) : a.get.Inverse a⁻¹.get :=
+    LeftInverse.inverse_fin <| fun _ => Fin.ext <| (a.getElem_toVector_getElem_invVector _ _).2
 
 @[simp]
 theorem inv_mk (a b : Vector Nat n) {hab} : (PermVector.mk a b hab)⁻¹ =
@@ -106,12 +109,12 @@ theorem exists_getElem_eq_of_lt (a : PermVector n) (i : Nat) (hi : i < n) :
   (Fin.exists_iff.mp ((a.surjective_get ⟨i, hi⟩).imp (fun _ => congrArg Fin.val)))
 
 @[simp] theorem getElem_getElem_inv (a : PermVector n) {i} (hi : i < n) :
-  a[a⁻¹[i]] = i := congrArg Fin.val (a.isEquiv_get_getInv.isSplitting_left _)
+  a[a⁻¹[i]] = i := congrArg Fin.val (a.inverse_get_getInv.leftInverse _)
 
 grind_pattern getElem_getElem_inv => a[a⁻¹[i]]
 
 @[simp] theorem getElem_inv_getElem (a : PermVector n) {i} (hi : i < n) :
-  a⁻¹[a[i]] = i := congrArg Fin.val (a.isEquiv_get_getInv.isSplitting_right _)
+  a⁻¹[a[i]] = i := congrArg Fin.val (a.inverse_get_getInv.rightInverse _)
 
 grind_pattern getElem_inv_getElem => a⁻¹[a[i]]
 
@@ -214,20 +217,20 @@ instance : Mul (PermVector n) where
 @[simp, grind =] theorem mul_inv_cancel (a : PermVector n) : a * a⁻¹ = 1 := by
   intros; ext; grind
 
-theorem isEquiv_mul_left {a : PermVector n} : IsEquiv (a * ·) (a⁻¹ * ·) :=
-  ⟨fun _ => by grind, fun _ => by grind⟩
+theorem inverse_mul_left {a : PermVector n} : Inverse (a * ·) (a⁻¹ * ·) :=
+  inverse_of_leftInverse_of_leftInverse (fun _ => by grind) (fun _ => by grind)
 
-theorem isEquiv_mul_right {a : PermVector n} : IsEquiv (· * a) (· * a⁻¹) :=
-  ⟨fun _ => by grind, fun _ => by grind⟩
+theorem inverse_mul_right {a : PermVector n} : Inverse (· * a) (· * a⁻¹) :=
+  inverse_of_leftInverse_of_leftInverse (fun _ => by grind) (fun _ => by grind)
 
 theorem mul_left_cancel {a b c : PermVector n} : a * b = a * c ↔ b = c :=
-  a.isEquiv_mul_left.bijective_left.injective.eq_iff
+  a.inverse_mul_left.bijective_left.injective.eq_iff
 
 theorem mul_right_cancel {a b c : PermVector n} : b * a = c * a ↔ b = c :=
-  a.isEquiv_mul_right.bijective_left.injective.eq_iff
+  a.inverse_mul_right.bijective_left.injective.eq_iff
 
 @[simp, grind =] theorem mul_inv_rev {a b : PermVector n} :
-    (a * b)⁻¹ = b⁻¹ * a ⁻¹ := (a * b).isEquiv_mul_left.bijective_left.injective (by grind)
+    (a * b)⁻¹ = b⁻¹ * a ⁻¹ := (a * b).inverse_mul_left.bijective_left.injective (by grind)
 
 instance : Std.Associative (α := PermVector n) (· * ·) where
   assoc := mul_assoc
@@ -299,7 +302,7 @@ theorem transpose_mul : transpose i j hi hj * a = a.swap a⁻¹[i] a⁻¹[j] (by
 
 theorem transpose_conj : a * transpose i j hi hj * a⁻¹ =
     transpose a[i] a[j] (by grind) (by grind) := by
-  simp only [mul_transpose, ← a.isEquiv_mul_right.bijective_left.injective.eq_iff, mul_assoc,
+  simp only [mul_transpose, ← a.inverse_mul_right.bijective_left.injective.eq_iff, mul_assoc,
     inv_mul_cancel, mul_one, transpose_mul, getElem_inv_getElem]
 
 @[simp] theorem swap_transpose : (transpose i j hi hj).swap i j hi' hj' = 1 := by
